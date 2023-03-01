@@ -139,7 +139,6 @@ trigger:
     entity_id: !input 'trigger_entity'
     zone: !input 'trigger_zone'
     event: !input 'trigger_event'
-condition: "{{ first_condition }}"
 action:
 - domain: mobile_app
   type: notify
