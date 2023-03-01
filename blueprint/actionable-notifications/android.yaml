@@ -54,9 +54,11 @@ blueprint:
     first_condition:
       name: Condition 1
       description: Condition that needs to be met
-      default: []
       selector:
-        condition: {}
+        select:
+          options:
+            - is_disarmed
+            - is_armed
     notification_title:
       name: Notification title (Optional)
       description: The title of the notification
@@ -67,7 +69,7 @@ blueprint:
       default: ''
     persistent_notification:
       name: Create persistent notification?
-      description: Persistent notifications cannot be dimissed by swiping away
+      description: Persistent notifications cannot be dismissed by swiping away
       default: false
       selector:
         boolean: {}
@@ -139,6 +141,12 @@ trigger:
     entity_id: !input 'trigger_entity'
     zone: !input 'trigger_zone'
     event: !input 'trigger_event'
+condition:
+  - condition: device
+    device_id: 7abd75f2dc3a770df4849d03a0e2ff97
+    domain: alarm_control_panel
+    entity_id: alarm_control_panel.alarmo
+    type: !input 'first_condition'
 action:
 - domain: mobile_app
   type: notify
