@@ -1,5 +1,5 @@
 blueprint:
-  name: Send actionable notifications when entering a zone for Android
+  name: Alarm actionable notifications when entering a zone for Android
   description: 'Send actionable notifications to an Android device, when an entity enters a zone.
 
     For each action, you can open an URL, an application on the device or load a lovelace
