@@ -58,7 +58,7 @@ blueprint:
         select:
           options:
             - is_disarmed
-            - is_armed
+            - is_armed_away
     notification_title:
       name: Notification title (Optional)
       description: The title of the notification
