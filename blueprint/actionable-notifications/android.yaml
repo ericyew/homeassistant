@@ -125,22 +125,15 @@ mode: restart
 max_exceeded: silent
 variables:
   notify_device: !input 'notify_device'
-  trigger_entity: !input 'trigger_entity'
-  trigger_event: !input 'trigger_event'
-  trigger_zone: !input 'trigger_zone'
-  first_condition: !input 'first_condition'
   notification_title: !input 'notification_title'
   notification_message: !input 'notification_message'
   persistent_notification: !input 'persistent_notification'
   action_1_title: !input 'action_1_title'
   action_1_uri: !input 'action_1_uri'
-  first_action: !input 'first_action'
   action_2_title: !input 'action_2_title'
   action_2_uri: !input 'action_2_uri'
-  second_action: !input 'second_action'
   action_3_title: !input 'action_3_title'
   action_3_uri: !input 'action_3_uri'
-  third_action: !input 'third_action'
 trigger:
   - platform: zone
     entity_id: !input 'trigger_entity'
