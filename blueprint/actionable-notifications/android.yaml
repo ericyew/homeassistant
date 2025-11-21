@@ -39,7 +39,7 @@ blueprint:
           domain: person
     trigger_event:
       name: Trigger Event
-      description: Select if the notification should be activated upod entering or leaving the zone
+      description: Select if the notification should be activated upon entering or leaving the zone
       selector:
         select:
           options:
@@ -51,14 +51,24 @@ blueprint:
       selector:
         entity:
           domain: zone
+
+    # NEW: configurable alarm entity (replace previous hard-coded device condition)
+    alarm_entity:
+      name: Alarm entity
+      description: Alarm entity to check (e.g. alarm_control_panel.alarmo)
+      selector:
+        entity:
+          domain: alarm_control_panel
+
     first_condition:
-      name: Condition 1
-      description: Condition that needs to be met
+      name: Condition 1 (Alarm state)
+      description: Alarm state that must match to send notification
       selector:
         select:
           options:
             - is_disarmed
             - is_armed_away
+
     notification_title:
       name: Notification title (Optional)
       description: The title of the notification
@@ -92,12 +102,12 @@ blueprint:
       description: Name of the second button
       default: ''
     action_2_uri:
-      name: URI for action 1 (Optional)
+      name: URI for action 2 (Optional)
       description: Optional URI for the second action
       default: ''
     second_action:
       name: Action 2
-      description: Action to run when the second action is clicked"
+      description: Action to run when the second action is clicked
       default: []
       selector:
         action: {}
@@ -123,6 +133,7 @@ variables:
   trigger_entity: !input 'trigger_entity'
   trigger_event: !input 'trigger_event'
   trigger_zone: !input 'trigger_zone'
+  alarm_entity: !input 'alarm_entity'
   first_condition: !input 'first_condition'
   notification_title: !input 'notification_title'
   notification_message: !input 'notification_message'
@@ -142,11 +153,9 @@ trigger:
     zone: !input 'trigger_zone'
     event: !input 'trigger_event'
 condition:
-  - condition: device
-    device_id: 7abd75f2dc3a770df4849d03a0e2ff97
-    domain: alarm_control_panel
-    entity_id: alarm_control_panel.alarmo
-    type: !input 'first_condition'
+  - condition: state
+    entity_id: !input 'alarm_entity'
+    state: !input 'first_condition'
 action:
 - domain: mobile_app
   type: notify
@@ -155,18 +164,27 @@ action:
   message: '{{ notification_message }}'
   data:
     tag: '{{ notification_title }}'
-    persistent: '{{ persistent_notification }}'
-    actions: "{% set titles = [action_1_title, action_2_title, action_3_title] %}\
-      \ {% set uris = [action_1_uri, action_2_uri, action_3_uri] %} {% set actions\
-      \ = namespace(data = []) %}\n{% for title in titles %}\n  {% if title|length\
-      \ %}\n    {% set uri = uris[loop.index - 1] %}\n    {% set action_name = \"\
-      action\" + loop.index|string %}\n    {% set action = {\n      \"action\": \"\
-      URI\" if uri|length else action_name,\n      \"title\": title,\n      \"uri\"\
-      : uri \n      }\n    %}\n    {% set actions.data = actions.data + [action] %}\n\
-      \  {% endif %}\n{% endfor %} {{ actions.data }}\n"
+    persistent: {{ persistent_notification }}
+    actions: >
+      {% set titles = [action_1_title, action_2_title, action_3_title] %}
+      {% set uris = [action_1_uri, action_2_uri, action_3_uri] %}
+      {% set out = [] %}
+      {% for title in titles %}
+        {% if title %}
+          {% set idx = loop.index0 %}
+          {% set uri = uris[idx] %}
+          {% set action_id = 'action' ~ (loop.index|string) %}
+          {% set out = out + [{
+            "action": (uri and "uri") or action_id,
+            "title": title,
+            "uri": uri
+          }] %}
+        {% endif %}
+      {% endfor %}
+      {{ out }}
 - wait_for_trigger:
-    platform: event
-    event_type: mobile_app_notification_action
+    - platform: event
+      event_type: mobile_app_notification_action
 - choose:
   - conditions: '{{ wait.trigger.event.data.action == ''action1'' }}'
     sequence: !input 'first_action'
